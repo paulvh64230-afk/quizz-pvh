@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as CreateRouteImport } from './routes/create'
 import { Route as JoinRouteImport } from './routes/join'
 import { Route as ECodeRouteImport } from './routes/e.$code'
+import { Route as PresenterTokenRouteImport } from './routes/presenter.$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -34,18 +35,25 @@ const ECodeRoute = ECodeRouteImport.update({
   path: '/e/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PresenterTokenRoute = PresenterTokenRouteImport.update({
+  id: '/presenter/$token',
+  path: '/presenter/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
   '/join': typeof JoinRoute
   '/e/$code': typeof ECodeRoute
+  '/presenter/$token': typeof PresenterTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/create': typeof CreateRoute
   '/join': typeof JoinRoute
   '/e/$code': typeof ECodeRoute
+  '/presenter/$token': typeof PresenterTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,14 @@ export interface FileRoutesById {
   '/create': typeof CreateRoute
   '/join': typeof JoinRoute
   '/e/$code': typeof ECodeRoute
+  '/presenter/$token': typeof PresenterTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/create' | '/join' | '/e/$code'
+  fullPaths: '/' | '/create' | '/join' | '/e/$code' | '/presenter/$token'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/create' | '/join' | '/e/$code'
-  id: '__root__' | '/' | '/create' | '/join' | '/e/$code'
+  to: '/' | '/create' | '/join' | '/e/$code' | '/presenter/$token'
+  id: '__root__' | '/' | '/create' | '/join' | '/e/$code' | '/presenter/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,6 +76,7 @@ export interface RootRouteChildren {
   CreateRoute: typeof CreateRoute
   JoinRoute: typeof JoinRoute
   ECodeRoute: typeof ECodeRoute
+  PresenterTokenRoute: typeof PresenterTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -99,6 +109,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ECodeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/presenter/$token': {
+      id: '/presenter/$token'
+      path: '/presenter/$token'
+      fullPath: '/presenter/$token'
+      preLoaderRoute: typeof PresenterTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -107,6 +124,7 @@ const rootRouteChildren: RootRouteChildren = {
   CreateRoute: CreateRoute,
   JoinRoute: JoinRoute,
   ECodeRoute: ECodeRoute,
+  PresenterTokenRoute: PresenterTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
