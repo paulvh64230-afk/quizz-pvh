@@ -15,9 +15,7 @@ function generateCode(): string {
 }
 
 function normalizeWord(raw: string): string {
-  return raw
-    .trim()
-    .split(/\s+/)[0]
+  return (raw.trim().split(/\s+/)[0] ?? "")
     .replace(/[^\p{L}\p{N}'-]/gu, "")
     .slice(0, 40)
     .toLowerCase();
@@ -140,7 +138,7 @@ export const createEvent = createServerFn({ method: "POST" })
 
 export const getPresenterState = createServerFn({ method: "GET" })
   .inputValidator((data) => z.object({ token: z.string().uuid() }).parse(data))
-  .handler(async ({ data }): Promise<PresenterStateOrError> => {
+  .handler(async ({ data }): Promise<PresenterState | FunctionError> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const db = supabaseAdmin as unknown as { from: (table: string) => any };
 
