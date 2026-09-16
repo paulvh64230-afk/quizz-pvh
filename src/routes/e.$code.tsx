@@ -13,7 +13,7 @@ export const Route = createFileRoute("/e/$code")({
     meta: [
       { title: `Événement ${params.code.toUpperCase()} — Quizz-App` },
       { name: "robots", content: "noindex" },
-ript    ],
+    ],
   }),
   loader: async ({ params, context }) => {
     const code = params.code.toUpperCase();
