@@ -14,7 +14,141 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      event_admins: {
+        Row: {
+          admin_token: string
+          event_id: string
+        }
+        Insert: {
+          admin_token: string
+          event_id: string
+        }
+        Update: {
+          admin_token?: string
+          event_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "event_admins_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: true
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          code: string
+          created_at: string
+          current_question_id: string | null
+          id: string
+          title: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          current_question_id?: string | null
+          id?: string
+          title: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          current_question_id?: string | null
+          id?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_current_question_fkey"
+            columns: ["current_question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      questions: {
+        Row: {
+          correct_option: number | null
+          event_id: string
+          id: string
+          options: Json
+          position: number
+          title: string
+          type: Database["public"]["Enums"]["question_type"]
+        }
+        Insert: {
+          correct_option?: number | null
+          event_id: string
+          id?: string
+          options?: Json
+          position?: number
+          title: string
+          type: Database["public"]["Enums"]["question_type"]
+        }
+        Update: {
+          correct_option?: number | null
+          event_id?: string
+          id?: string
+          options?: Json
+          position?: number
+          title?: string
+          type?: Database["public"]["Enums"]["question_type"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questions_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      responses: {
+        Row: {
+          content: Json
+          created_at: string
+          event_id: string
+          id: string
+          participant_id: string
+          question_id: string
+        }
+        Insert: {
+          content: Json
+          created_at?: string
+          event_id: string
+          id?: string
+          participant_id: string
+          question_id: string
+        }
+        Update: {
+          content?: Json
+          created_at?: string
+          event_id?: string
+          id?: string
+          participant_id?: string
+          question_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "responses_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "responses_question_id_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -23,7 +157,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      [_ in never]: never
+      question_type: "quiz" | "wordcloud" | "open" | "ranking"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +284,8 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      question_type: ["quiz", "wordcloud", "open", "ranking"],
+    },
   },
 } as const
