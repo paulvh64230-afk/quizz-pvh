@@ -27,7 +27,7 @@ export const Route = createFileRoute("/")({
           "Créez un événement interactif en 30 secondes. Les participants répondent depuis leur téléphone, les résultats s'affichent en direct.",
       },
       { property: "og:type", content: "website" },
-ec      { name: "twitter:card", content: "summary_large_image" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Index,
