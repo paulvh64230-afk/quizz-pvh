@@ -42,11 +42,14 @@ function PresenterPage() {
     queryKey: ["presenter", token],
     queryFn: () => fetchState({ data: { token } }),
   });
-  const { event, questions } = state;
-  const currentQuestion = questions.find((q) => q.id === event.currentQuestionId) ?? null;
+  const event = "event" in state ? state.event : null;
+  const questions = "questions" in state ? state.questions : [];
+  const currentQuestion =
+    questions.find((q) => q.id === event?.currentQuestionId) ?? null;
 
   // Realtime: incoming responses refresh the results
   useEffect(() => {
+    if (!event) return;
     const channel = supabase
       .channel(`presenter-${event.id}`)
       .on(
@@ -63,7 +66,7 @@ function PresenterPage() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [event.id, queryClient]);
+  }, [event, queryClient]);
 
   const { data: responses = [] } = useQuery({
     queryKey: ["responses", currentQuestion?.id ?? "none"],
@@ -97,6 +100,14 @@ function PresenterPage() {
   };
 
   const joinUrl = `${window.location.origin}/join`;
+
+  if (!event) {
+    return (
+      <div className="flex min-h-screen items-center justify-center px-6 text-center text-sm text-muted-foreground">
+        Lien animateur invalide.
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background">
