@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound, useNavigate } from "@tanstack/react-router";
-import { useMutation, useQueryClient, useServerFn, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { ArrowLeft, CheckCircle2, PencilLine, Send, ChevronUp, ChevronDown } from "lucide-react";
@@ -334,7 +335,9 @@ function RankingForm({
     const target = index + dir;
     if (target < 0 || target >= order.length) return;
     const next = [...order];
-    [next[index], next[target]] = [next[target], next[index]];
+    const tmp = next[index]!;
+    next[index] = next[target]!;
+    next[target] = tmp;
     setOrder(next);
   };
 

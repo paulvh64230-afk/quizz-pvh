@@ -1,5 +1,6 @@
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
-import { useMutation, useQuery, useQueryClient, useServerFn, useSuspenseQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient, useSuspenseQuery } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { useEffect } from "react";
 import { toast } from "sonner";
 import { Copy, Play, SkipForward, Users } from "lucide-react";
@@ -309,14 +310,14 @@ function ResultsPanel({ question, responses }: { question: QuestionData; respons
   for (const c of contents) {
     if (Array.isArray(c.order) && c.order.length === question.options.length) {
       c.order.forEach((optionIndex, rank) => {
-        sums[optionIndex] += rank + 1;
+        sums[optionIndex] = (sums[optionIndex] ?? 0) + rank + 1;
       });
       voters++;
     }
   }
   const averages = sums.map((s) => s / Math.max(1, voters));
   const ranking = question.options
-    .map((opt, i) => ({ opt, avg: averages[i] }))
+    .map((opt, i) => ({ opt, avg: averages[i] ?? 0 }))
     .sort((a, b) => a.avg - b.avg);
   return (
     <div className="space-y-2.5">
