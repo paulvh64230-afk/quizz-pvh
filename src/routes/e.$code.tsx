@@ -39,22 +39,20 @@ function ParticipantPage() {
     queryKey: ["participant", codeUpper],
     queryFn: () => fetchState({ data: { code: codeUpper } }),
   });
-  const { event, currentQuestion } = state;
-
   // Realtime: refresh when the presenter switches question
   useEffect(() => {
     const channel = supabase
-      .channel(`event-${event.id}`)
+      .channel(`event-${codeUpper}`)
       .on(
         "postgres_changes",
-        { event: "*", schema: "public", table: "events", filter: `id=eq.${event.id}` },
+        { event: "*", schema: "public", table: "events", filter: `code=eq.${codeUpper}` },
         () => queryClient.invalidateQueries({ queryKey: ["participant", codeUpper] }),
       )
       .subscribe();
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [event.id, codeUpper, queryClient]);
+  }, [codeUpper, queryClient]);
 
   // Stable anonymous participant id (no account needed)
   const [participantId, setParticipantId] = useState<string | null>(null);
@@ -91,6 +89,7 @@ function ParticipantPage() {
       </div>
     );
   }
+  const { event, currentQuestion } = state;
 
   return (
     <div className="flex min-h-screen flex-col bg-background">

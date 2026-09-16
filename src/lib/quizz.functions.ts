@@ -4,6 +4,7 @@ import type {
   FunctionError,
   ParticipantState,
   PresenterState,
+  QuestionData,
 } from "./quizz.types";
 
 const CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
