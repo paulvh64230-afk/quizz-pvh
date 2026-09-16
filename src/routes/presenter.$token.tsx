@@ -84,7 +84,7 @@ function PresenterPage() {
     onError: (e) => toast.error(e.message),
     onSuccess: (result) => {
       if (result && "error" in result) toast.error(result.error);
-ript      else queryClient.invalidateQueries({ queryKey: ["presenter", token] });
+      else queryClient.invalidateQueries({ queryKey: ["presenter", token] });
     },
   });
 
