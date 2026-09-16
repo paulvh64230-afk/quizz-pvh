@@ -97,7 +97,7 @@ export const createEvent = createServerFn({ method: "POST" })
           return { error: "La bonne réponse choisie n'existe pas dans les options." };
         }
       }
-et    }
+    }
 
     let lastError: unknown = null;
     for (let attempt = 0; attempt < 5; attempt++) {
