@@ -83,7 +83,9 @@ function CreatePage() {
       const next = [...d];
       const target = index + direction;
       if (target < 0 || target >= next.length) return d;
-      [next[index], next[target]] = [next[target], next[index]];
+      const tmp = next[index]!;
+      next[index] = next[target]!;
+      next[target] = tmp;
       return next;
     });
   };

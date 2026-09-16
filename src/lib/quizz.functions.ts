@@ -258,7 +258,7 @@ export const submitResponse = createServerFn({ method: "POST" })
 
 export const getParticipantEvent = createServerFn({ method: "GET" })
   .inputValidator((data) => z.object({ code: z.string().trim().length(6) }).parse(data))
-  .handler(async ({ data }): Promise<ParticipantState | { error: string }> => {
+  .handler(async ({ data }): Promise<ParticipantState | FunctionError> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const db = supabaseAdmin as unknown as { from: (table: string) => any };
 
@@ -294,6 +294,3 @@ export const getParticipantEvent = createServerFn({ method: "GET" })
     };
   });
 
-type PresenterStateOrError =
-  | import("./quizz.types").PresenterState
-  | import("./quizz.types").FunctionError;
