@@ -250,7 +250,7 @@ function ResultsPanel({ question, responses }: { question: QuestionData; respons
     return (
       <div className="space-y-3">
         {question.options.map((opt, i) => {
-          const pct = Math.round((counts[i] / total) * 100);
+          const pct = Math.round(((counts[i] ?? 0) / total) * 100);
           const isCorrect = question.correctOption === i;
           return (
             <div key={i}>
