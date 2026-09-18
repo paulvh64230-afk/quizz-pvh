@@ -161,9 +161,12 @@ function AnswerForm({
 
   if (submitted !== null) {
     const isQuiz = question.type === "quiz";
-    const chosen = isQuiz && typeof submitted === "object" && submitted !== null && "option" in submitted
+    // QuizForm envoie un simple nombre ; le serveur stocke { option }.
+    // Accepter les deux formes pour calculer si la réponse est correcte.
+    const raw = isQuiz && submitted !== null && typeof submitted === "object" && "option" in submitted
       ? (submitted as { option: number }).option
-      : null;
+      : submitted;
+    const chosen = isQuiz && typeof raw === "number" ? raw : null;
     const correct = chosen != null && question.correctOption === chosen;
     return (
       <div className="rounded-4xl border border-border bg-card p-10 text-center shadow-sm">
