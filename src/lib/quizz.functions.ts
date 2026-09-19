@@ -256,43 +256,81 @@ export const submitResponse = createServerFn({ method: "POST" })
       })
       .parse(data),
   )
-  .handler(async ({ data }): Promise<{ ok: true } | { error: string }> => {
-    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const db = supabaseAdmin as unknown as { from: (table: string) => any };
+  .handler(
+    async ({
+      data,
+    }): Promise<{ ok: true; points: number; correct: boolean | null } | { error: string }> => {
+      const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+      const db = supabaseAdmin as unknown as { from: (table: string) => any };
 
-    const { data: ev } = await db
-      .from("events")
-      .select("id, current_question_id")
-      .eq("code", data.code.toUpperCase())
-      .maybeSingle();
-    if (!ev) return { error: "Événement introuvable." };
-    if (ev.current_question_id !== data.questionId) {
-      return { error: "Cette question n'est plus ouverte." };
-    }
+      const { data: ev } = await db
+        .from("events")
+        .select("id, current_question_id, current_question_started_at")
+        .eq("code", data.code.toUpperCase())
+        .maybeSingle();
+      if (!ev) return { error: "Événement introuvable." };
+      if (ev.current_question_id !== data.questionId) {
+        return { error: "Cette question n'est plus ouverte." };
+      }
 
-    const { data: question } = await db
-      .from("questions")
-      .select("type, options")
-      .eq("id", data.questionId)
-      .single();
-    if (!question) return { error: "Question introuvable." };
+      const { data: participant } = await db
+        .from("participants")
+        .select("id, event_id")
+        .eq("id", data.participantId)
+        .maybeSingle();
+      if (!participant || participant.event_id !== ev.id) {
+        return { error: "Participant inconnu. Rejoignez l'événement avec votre pseudo." };
+      }
 
-    const normalized = normalizeContent(
-      question.type,
-      ((question.options ?? []) as unknown[]).length,
-      data.content,
-    );
-    if (!normalized.ok) return { error: normalized.error };
+      const { data: question } = await db
+        .from("questions")
+        .select("type, options, correct_option")
+        .eq("id", data.questionId)
+        .single();
+      if (!question) return { error: "Question introuvable." };
 
-    const { error } = await db.from("responses").insert({
-      event_id: ev.id,
-      question_id: data.questionId,
-      participant_id: data.participantId,
-      content: normalized.content,
-    });
-    if (error) return { error: "Impossible d'enregistrer la réponse. Réessayez." };
-    return { ok: true };
-  });
+      const normalized = normalizeContent(
+        question.type,
+        ((question.options ?? []) as unknown[]).length,
+        data.content,
+      );
+      if (!normalized.ok) return { error: normalized.error };
+
+      // Scoring: only quiz questions with a defined correct answer award points.
+      // 1000 points when instant, down to 500 after 30 s (speed bonus).
+      let points = 0;
+      let correct: boolean | null = null;
+      if (question.type === "quiz" && question.correct_option != null) {
+        correct = normalized.content["option"] === question.correct_option;
+        if (correct) {
+          const { count } = await db
+            .from("responses")
+            .select("id", { count: "exact", head: true })
+            .eq("question_id", data.questionId)
+            .eq("participant_id", data.participantId);
+          const alreadyAnswered = (count ?? 0) > 0;
+          if (!alreadyAnswered) {
+            const startedAt = ev.current_question_started_at
+              ? new Date(ev.current_question_started_at).getTime()
+              : Date.now();
+            const elapsed = Math.max(0, (Date.now() - startedAt) / 1000);
+            const ratio = Math.min(elapsed, 30) / 30;
+            points = Math.round(1000 - 500 * ratio);
+          }
+        }
+      }
+
+      const { error } = await db.from("responses").insert({
+        event_id: ev.id,
+        question_id: data.questionId,
+        participant_id: data.participantId,
+        content: normalized.content,
+        points,
+      });
+      if (error) return { error: "Impossible d'enregistrer la réponse. Réessayez." };
+      return { ok: true, points, correct };
+    },
+  );
 
 export const getParticipantEvent = createServerFn({ method: "GET" })
   .inputValidator((data) => z.object({ code: z.string().trim().length(6) }).parse(data))
