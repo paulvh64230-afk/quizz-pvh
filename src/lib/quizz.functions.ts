@@ -202,10 +202,47 @@ export const setCurrentQuestion = createServerFn({ method: "POST" })
 
     const { error } = await db
       .from("events")
-      .update({ current_question_id: data.questionId })
+      .update({
+        current_question_id: data.questionId,
+        current_question_started_at: new Date().toISOString(),
+      })
       .eq("id", admin.event_id);
     if (error) return { error: "Impossible de changer de question. Réessayez." };
     return { ok: true };
+  });
+
+/** Registers a participant nickname for an event and returns its stable id. */
+export const joinEvent = createServerFn({ method: "POST" })
+  .inputValidator((data) =>
+    z
+      .object({
+        code: z.string().trim().length(6),
+        nickname: z.string().trim().min(2, "Pseudo trop court").max(24),
+      })
+      .parse(data),
+  )
+  .handler(async ({ data }): Promise<{ participantId: string; nickname: string } | { error: string }> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    const db = supabaseAdmin as unknown as { from: (table: string) => any };
+
+    const nickname = data.nickname.replace(/\s+/g, " ").trim();
+
+    const { data: ev } = await db
+      .from("events")
+      .select("id")
+      .eq("code", data.code.toUpperCase())
+      .maybeSingle();
+    if (!ev) return { error: "Aucun événement avec ce code." };
+
+    const { data: participant, error } = await db
+      .from("participants")
+      .insert({ event_id: ev.id, nickname })
+      .select("id, nickname")
+      .single();
+    if (error) {
+      return { error: "Ce pseudo est déjà pris dans cet événement. Choisissez-en un autre." };
+    }
+    return { participantId: participant.id as string, nickname: participant.nickname as string };
   });
 
 export const submitResponse = createServerFn({ method: "POST" })
