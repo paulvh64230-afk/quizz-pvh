@@ -42,6 +42,7 @@ export type Database = {
           code: string
           created_at: string
           current_question_id: string | null
+          current_question_started_at: string | null
           id: string
           title: string
         }
@@ -49,6 +50,7 @@ export type Database = {
           code: string
           created_at?: string
           current_question_id?: string | null
+          current_question_started_at?: string | null
           id?: string
           title: string
         }
@@ -56,6 +58,7 @@ export type Database = {
           code?: string
           created_at?: string
           current_question_id?: string | null
+          current_question_started_at?: string | null
           id?: string
           title?: string
         }
@@ -65,6 +68,35 @@ export type Database = {
             columns: ["current_question_id"]
             isOneToOne: false
             referencedRelation: "questions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      participants: {
+        Row: {
+          created_at: string
+          event_id: string
+          id: string
+          nickname: string
+        }
+        Insert: {
+          created_at?: string
+          event_id: string
+          id?: string
+          nickname: string
+        }
+        Update: {
+          created_at?: string
+          event_id?: string
+          id?: string
+          nickname?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "participants_event_id_fkey"
+            columns: ["event_id"]
+            isOneToOne: false
+            referencedRelation: "events"
             referencedColumns: ["id"]
           },
         ]
@@ -114,6 +146,7 @@ export type Database = {
           event_id: string
           id: string
           participant_id: string
+          points: number
           question_id: string
         }
         Insert: {
@@ -122,6 +155,7 @@ export type Database = {
           event_id: string
           id?: string
           participant_id: string
+          points?: number
           question_id: string
         }
         Update: {
@@ -130,6 +164,7 @@ export type Database = {
           event_id?: string
           id?: string
           participant_id?: string
+          points?: number
           question_id?: string
         }
         Relationships: [
