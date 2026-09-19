@@ -1,5 +1,5 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { toast } from "sonner";
 import {
   ListChecks,
@@ -13,10 +13,13 @@ import {
   PartyPopper,
   MonitorPlay,
   Copy,
+  Download,
+  Upload,
 } from "lucide-react";
 
 import { createEvent } from "@/lib/quizz.functions";
 import { QUESTION_TYPE_LABELS, type QuestionType } from "@/lib/quizz.types";
+import { downloadTemplate, parseQuestionsFile } from "@/lib/quizz.xlsx";
 
 export const Route = createFileRoute("/create")({
   head: () => ({
