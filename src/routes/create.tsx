@@ -67,10 +67,43 @@ function CreatePage() {
   const [title, setTitle] = useState("");
   const [drafts, setDrafts] = useState<QuestionDraft[]>([]);
   const [submitting, setSubmitting] = useState(false);
+  const [importing, setImporting] = useState(false);
   const [created, setCreated] = useState<{ code: string; adminToken: string } | null>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const addDraft = (type: QuestionType) => {
     setDrafts((d) => [...d, newDraft(type)]);
+  };
+
+  const handleTemplate = async () => {
+    try {
+      await downloadTemplate();
+      toast.success("Modèle Excel téléchargé !");
+    } catch {
+      toast.error("Le téléchargement du modèle a échoué. Réessayez.");
+    }
+  };
+
+  const handleFile = async (file: File | null | undefined) => {
+    if (!file) return;
+    setImporting(true);
+    try {
+      const { questions, errors } = await parseQuestionsFile(file);
+      if (questions.length > 0) {
+        setDrafts((d) => [...d, ...questions.map((q) => ({ ...newDraft(q.type), ...q }))]);
+        const n = questions.length;
+        toast.success(`${n} question${n > 1 ? "s" : ""} importée${n > 1 ? "s" : ""} !`);
+      }
+      for (const message of errors.slice(0, 5)) toast.error(message);
+      if (questions.length === 0 && errors.length === 0) {
+        toast.error("Aucune question trouvée dans ce fichier.");
+      }
+    } catch {
+      toast.error("Fichier illisible. Utilisez le modèle Excel proposé.");
+    } finally {
+      setImporting(false);
+      if (fileRef.current) fileRef.current.value = "";
+    }
   };
 
   const updateDraft = (localId: string, patch: Partial<QuestionDraft>) => {
@@ -209,8 +242,42 @@ function CreatePage() {
       </div>
 
       {/* Add question */}
+      {/* Import Excel */}
+      <div className="mt-8 rounded-3xl border border-dashed border-secondary/50 bg-secondary/5 p-5">
+        <p className="text-sm font-semibold">Importer vos questions depuis Excel</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          Téléchargez le modèle, remplissez une ligne par question, puis importez le fichier. Les
+          questions importées s'ajoutent à votre liste et restent modifiables.
+        </p>
+        <div className="mt-4 flex flex-wrap gap-2.5">
+          <button
+            onClick={handleTemplate}
+            className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-4 py-2.5 text-sm font-semibold transition-colors hover:border-secondary/60 hover:bg-secondary/10"
+          >
+            <Download className="size-4" /> Télécharger le modèle Excel
+          </button>
+          <button
+            onClick={() => fileRef.current?.click()}
+            disabled={importing}
+            className="inline-flex items-center gap-2 rounded-full bg-secondary px-4 py-2.5 text-sm font-semibold text-secondary-foreground transition-colors hover:bg-secondary/90 disabled:opacity-50"
+          >
+            <Upload className="size-4" />
+            {importing ? "Import en cours…" : "Importer un fichier"}
+          </button>
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".xlsx,.xls,.csv"
+            aria-label="Fichier Excel de questions"
+            onChange={(e) => handleFile(e.target.files?.[0])}
+            className="hidden"
+          />
+        </div>
+      </div>
+
+      {/* Add question */}
       <div className="mt-8">
-        <p className="text-sm font-semibold">Ajouter une question</p>
+        <p className="text-sm font-semibold">Ajouter une question manuellement</p>
         <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
           {(
             [
